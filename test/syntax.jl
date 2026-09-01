@@ -1,3 +1,4 @@
+using JSON
 using Test
 using WebIO
 
@@ -40,5 +41,17 @@ using WebIO
 
         myvalue = js"a + 1"
         @test js"x = $myvalue".s == "x = a + 1"
+    end
+
+    @testset "JSStrings nested in interpolated values" begin
+        handler = Dict("onclick" => js"alert(1)")
+
+        # Interpolating into a `js"..."` literal splices JSStrings in as raw
+        # JavaScript, at any depth.
+        @test js"f($handler)".s == "f({\"onclick\":alert(1)})"
+
+        # The default JSON serialization instead quotes them, which is what
+        # keeps node props such as event handlers valid JSON.
+        @test JSON.json(handler) == "{\"onclick\":\"alert(1)\"}"
     end
 end
