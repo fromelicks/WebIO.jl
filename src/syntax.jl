@@ -252,6 +252,10 @@ const verbose_json = Ref(false)
     # `verbose_json[]` has no effect here: there is no v1 equivalent of
     # re-indenting a raw fragment across lines.
     JSON.lower(::JSEvalSerialization, x::JSString) = JSON.JSONText(x.s)
+
+    # Non-finite floats are written as `null` as JSON.jl < 1 does, where
+    # JSON.jl v1 would throw instead.
+    JSON.lower(::JSEvalSerialization, x::AbstractFloat) = isfinite(x) ? x : nothing
 else
     const JSONContext = JSON.Writer.StructuralContext
     const JSONSerialization = JSON.Serializations.CommonSerialization
